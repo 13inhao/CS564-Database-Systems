@@ -21,10 +21,10 @@ This is Belong table, which stores the many-to-many relationship between items a
 
 ```sql
 CREATE TABLE Belong (
-    CategoryID      VARCHAR(255),
+    CategoryName      VARCHAR(255),
     ItemID          INTEGER,
-    PRIMARY KEY (CategoryID, ItemID),
-    FOREIGN KEY (CategoryID) REFERENCES Category (CategoryID),
+    PRIMARY KEY (CategoryName, ItemID),
+    FOREIGN KEY (CategoryName) REFERENCES Category (CategoryName),
     FOREIGN KEY (ItemID) REFERENCES Item (ItemID),
 );
 ```
