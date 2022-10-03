@@ -9,7 +9,6 @@ Binhao Chen, Yang Yang, Yishen Sun
 ## Relational schema definitions
 
 This is Category table. CategoryID is the primary key.
-Category()
 
 ```sql
 CREATE TABLE Category (
