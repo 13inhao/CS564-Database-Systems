@@ -33,6 +33,9 @@ columnSeparator = "|"
 # global variable
 Item_Array = []
 
+categories_data = [] 
+belong_data = []
+
 # Dictionary of months used for date transformation
 MONTHS = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06',\
         'Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
@@ -81,6 +84,11 @@ def parseJson(json_file):
         items = loads(f.read())['Items'] # creates a Python dictionary of Items for the supplied json file
         for item in items:
             itemtable(item)
+            createCategoryTable(item)
+            createBelongTable(item)
+
+
+
 """
 Item table
 """
@@ -101,6 +109,31 @@ def itemtable(item):
     SellerID = item['Seller']['UserID']
     Item_Array.append(ItemID + "|" + Number_of_Bids + "|" + First_Bid + "|" + Currently + "|\"" + '"|"'.join([Name, Buy_Price, Started, Ends, SellerID, Description]) + '"\n')
     
+
+
+"""
+Category table
+"""
+def createCategoryTable(item):
+    global categories_data
+    for category in item["Category"]:
+        data = '\"' + sub(r'\"','\"\"', category) + '\"' + "\n"
+        categories_data.append(data)
+    categories_data = (list(dict.fromkeys(categories_data)))
+    
+
+"""
+Belong table
+"""
+def createBelongTable(item):
+    global belong_data
+    itemID = str(item["ItemID"])
+    categoryList = item["Category"]
+    for category in categoryList:
+        data = itemID + "|" + '\"' + sub(r'\"','\"\"', category) + '\"' + "\n"
+        belong_data.append(data)
+
+
 """
 Loops through each json files provided on the command line and passes each file
 to the parser
@@ -115,8 +148,14 @@ def main(argv):
             parseJson(f)
             print ("Success parsing " + f)
     # 
-    with open("Item.dat","w") as f: 
-        f.writelines(Item_Array)
+    with open("Item.dat","w") as f1: 
+        f1.writelines(Item_Array)
+    
+    with open("Categories.dat","w") as f2: 
+        f2.writelines(categories_data)
+    
+    with open("belong.dat","w") as f3: 
+        f3.writelines(belong_data)
 
 if __name__ == '__main__':
     main(sys.argv)
