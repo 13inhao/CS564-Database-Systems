@@ -30,6 +30,9 @@ from re import sub
 
 columnSeparator = "|"
 
+# global variable
+Item_Array = []
+
 # Dictionary of months used for date transformation
 MONTHS = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06',\
         'Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
@@ -77,26 +80,43 @@ def parseJson(json_file):
     with open(json_file, 'r') as f:
         items = loads(f.read())['Items'] # creates a Python dictionary of Items for the supplied json file
         for item in items:
-            """
-            TODO: traverse the items dictionary to extract information from the
-            given `json_file' and generate the necessary .dat files to generate
-            the SQL tables based on your relation design
-            """
-            pass
-
+            itemtable(item)
+"""
+Item table
+"""
+def itemtable(item):
+    global Item_Array
+    ItemID = str(item['ItemID'])
+    Number_of_Bids = str(item['Number_of_Bids'])
+    First_Bid = transformDollar(item['First_Bid'])
+    # First_Bid = float(First_Bid)
+    Currently = transformDollar(item['Currently'])
+    # Currently = float(Currently)
+    Buy_Price = transformDollar(item['Buy_Price']) if "Buy_Price" in item else 'NULL'
+    # Buy_Price = float(Buy_Price)
+    Name = item['Name'].replace('"','""')
+    Description = item['Description'].replace('"','""') if item['Description'] is not None else ""
+    Started = transformDttm(item['Started'])
+    Ends = transformDttm(item['Ends'])
+    SellerID = item['Seller']['UserID']
+    Item_Array.append(ItemID + "|" + Number_of_Bids + "|" + First_Bid + "|" + Currently + "|\"" + '"|"'.join([Name, Buy_Price, Started, Ends, SellerID, Description]) + '"\n')
+    
 """
 Loops through each json files provided on the command line and passes each file
 to the parser
 """
 def main(argv):
     if len(argv) < 2:
-        print >> sys.stderr, 'Usage: python skeleton_json_parser.py <path to json files>'
+        print (sys.stderr, 'Usage: python skeleton_json_parser.py <path to json files>')
         sys.exit(1)
     # loops over all .json files in the argument
     for f in argv[1:]:
         if isJson(f):
             parseJson(f)
-            print "Success parsing " + f
+            print ("Success parsing " + f)
+    # 
+    with open("Item.dat","w") as f: 
+        f.writelines(Item_Array)
 
 if __name__ == '__main__':
     main(sys.argv)
