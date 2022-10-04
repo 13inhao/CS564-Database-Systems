@@ -36,6 +36,9 @@ Item_Array = []
 categories_data = [] 
 belong_data = []
 
+bid_data = []
+user_data = []
+
 # Dictionary of months used for date transformation
 MONTHS = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06',\
         'Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
@@ -84,8 +87,12 @@ def parseJson(json_file):
         items = loads(f.read())['Items'] # creates a Python dictionary of Items for the supplied json file
         for item in items:
             itemtable(item)
+
             createCategoryTable(item)
             createBelongTable(item)
+
+            createBidTable(item)
+            createUserTable(item)
 
 
 
@@ -135,6 +142,100 @@ def createBelongTable(item):
 
 
 """
+Bid table
+"""
+def createBidTable(item):
+    global bid_data
+    itemID = str(item['ItemID'])
+    userID = ''
+    time = ''
+    amount = ''
+    bidList = item['Bids']
+    if bidList != None:
+        for bid in bidList:
+            if bid['Bid']['Bidder']['UserID'] != None:
+                userID = sub(r'\"','\"\"',bid['Bid']["Bidder"]["UserID"])
+            else:
+                userID = "NULL"
+            if bid['Bid']['Time'] != None:
+                time = transformDttm(bid['Bid']['Time'])
+            else:
+                time = "NULL"
+            if bid['Bid']['Amount'] != None:
+                amount = transformDollar(bid['Bid']['Amount'])
+            else:
+                amount = "NULL"
+
+            bid_data.append(f'{itemID}|"{userID}"|{time}|{amount}' + '\n')
+
+
+"""
+User table
+"""
+userID_list = []
+def createUserTable(item):
+    global user_data
+    global userID_list
+    # Get bidder
+    userID = ''
+    location = ''
+    rating = ''
+    country = ''
+
+    bidList = item['Bids']
+    if bidList != None:
+        for bid in bidList:
+            if bid['Bid']['Bidder']['UserID'] not in userID_list:
+                userID_list.append(bid['Bid']['Bidder']['UserID'])
+                userID = sub(r'\"','\"\"',bid['Bid']["Bidder"]["UserID"])
+            else:
+                continue
+
+            if 'Location' in bid['Bid']['Bidder'].keys() and bid['Bid']['Bidder']['Location'] != None:
+                location = sub(r'\"','\"\"',bid['Bid']['Bidder']['Location'])
+            else:
+                location = "NULL"
+
+            if 'Country' in bid['Bid']['Bidder'].keys() and bid['Bid']['Bidder']['Country'] != None:
+                country = sub(r'\"','\"\"',bid['Bid']['Bidder']['Country'])
+            else:
+                country = "NULL"
+
+            if bid['Bid']['Bidder']['Rating'] != None:
+                rating = bid['Bid']['Bidder']['Rating']
+            else:
+                rating = "NULL"
+            
+            user_data.append(f'"{userID}"|"{location}"|{rating}|"{country}"' + '\n')
+
+    # Get seller
+    seller = item["Seller"]
+    sellerID = seller["UserID"]
+    if sellerID not in userID_list:
+        userID_list.append(sellerID)
+        userID = sub(r'\"','\"\"',sellerID)
+    
+        if item['Location'] != None:
+            location = sub(r'\"','\"\"',item['Location'])
+        else:
+            location = "NULL"
+
+        if item['Country'] != None:
+            country = sub(r'\"','\"\"',item['Country'])
+        else:
+            country = "NULL"
+
+        if seller['Rating'] != None:
+            rating = seller['Rating']
+        else:
+            rating = "NULL"
+
+        user_data.append(f'"{userID}"|"{location}"|{rating}|"{country}"' + '\n')
+
+
+
+
+"""
 Loops through each json files provided on the command line and passes each file
 to the parser
 """
@@ -151,11 +252,17 @@ def main(argv):
     with open("Item.dat","w") as f1: 
         f1.writelines(Item_Array)
     
-    with open("Categories.dat","w") as f2: 
+    with open("Category.dat","w") as f2: 
         f2.writelines(categories_data)
     
-    with open("belong.dat","w") as f3: 
+    with open("Belong.dat","w") as f3: 
         f3.writelines(belong_data)
+
+    with open("Bid.dat","w") as f4: 
+        f4.writelines(bid_data)
+    
+    with open("User.dat","w") as f5: 
+        f5.writelines(user_data)
 
 if __name__ == '__main__':
     main(sys.argv)
