@@ -19,13 +19,13 @@ CREATE TABLE Item (
     ItemID          INTEGER         PRIMARY KEY,
     Number_of_bids  INTEGER         NOT NULL,
     First_Bid       DOUBLE          NOT NULL,
-    Buy_Price       DOUBLE,
     Currently       DOUBLE          NOT NULL,
     Name            VARCHAR(255)    NOT NULL,
-    Description     VARCHAR(255),
+    Buy_Price       DOUBLE,
     Started         DATETIME        NOT NULL,
     Ends            DATETIME        NOT NULL,
     SellerID        VARCHAR(255),
+    Description     VARCHAR(255),
     FOREIGN KEY (SellerID) REFERENCES User (UserID)
 );
 
