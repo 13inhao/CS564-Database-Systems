@@ -121,7 +121,7 @@ def itemtable(item):
     Buy_Price = transformDollar(item['Buy_Price']) if "Buy_Price" in item else 'NULL'
     # Buy_Price = float(Buy_Price)
     Name = item['Name'].replace('"','""')
-    Description = item['Description'].replace('"','""') if item['Description'] is not None else ""
+    Description = item['Description'].replace('"','""') if item['Description'] is not None else 'NULL'
     Started = transformDttm(item['Started'])
     Ends = transformDttm(item['Ends'])
     SellerID = item['Seller']['UserID']
