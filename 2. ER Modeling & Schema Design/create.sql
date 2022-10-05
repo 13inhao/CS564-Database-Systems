@@ -8,14 +8,6 @@ CREATE TABLE Category (
     CategoryID      VARCHAR(255)    PRIMARY KEY
 );
 
-CREATE TABLE Belong (
-    ItemID          INTEGER,
-    CategoryID      VARCHAR(255),
-    PRIMARY KEY (CategoryID, ItemID),
-    FOREIGN KEY (CategoryID) REFERENCES Category (CategoryID),
-    FOREIGN KEY (ItemID) REFERENCES Item (ItemID),
-);
-
 CREATE TABLE User (
     UserID          VARCHAR(255)    PRIMARY KEY,
     Location        VARCHAR(255),
@@ -35,6 +27,14 @@ CREATE TABLE Item (
     Ends            DATETIME        NOT NULL,
     SellerID        VARCHAR(255),
     FOREIGN KEY (SellerID) REFERENCES User (UserID),
+);
+
+CREATE TABLE Belong (
+    ItemID          INTEGER,
+    CategoryID      VARCHAR(255),
+    PRIMARY KEY (CategoryID, ItemID),
+    FOREIGN KEY (CategoryID) REFERENCES Category (CategoryID),
+    FOREIGN KEY (ItemID) REFERENCES Item (ItemID),
 );
 
 CREATE TABLE Bid (
