@@ -2,6 +2,7 @@
 """
 FILE: skeleton_parser.py
 ------------------
+
 Author: Firas Abuzaid (fabuzaid@stanford.edu)
 Author: Perth Charernwattanagul (puch@stanford.edu)
 Modified: 04/21/2014
@@ -22,6 +23,16 @@ Your job is to implement the parseJson function, which is invoked on each file b
 the main function. We create the initial Python dictionary object of items for
 you; the rest is up to you!
 Happy parsing!
+"""
+
+
+"""
+CS564 2022Fall Project2 
+ER Modeling & Schema Design
+
+Author: Binhao Chen (bchen276@wisc.edu)
+Author: Steven Yang (yang558@wisc.edu)
+Author: Yishen Sun (yishen.sun@wisc.edu)
 """
 
 import sys
