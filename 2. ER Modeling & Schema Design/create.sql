@@ -41,7 +41,7 @@ CREATE TABLE Bid (
     ItemID      INTEGER             NOT NULL,
     UserID      VARCHAR(255)        NOT NULL,
     Time        DATETIME            NOT NULL,
-    Amount      VARCHAR(255)        NOT NULL,
+    Amount      DOUBLE              NOT NULL,
     FOREIGN KEY (UserID) REFERENCES User (UserID),
     FOREIGN KEY (ItemID) REFERENCES Item (ItemID),
     PRIMARY KEY (UserID, ItemID, Time)

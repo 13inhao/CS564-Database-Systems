@@ -147,9 +147,12 @@ def createBelongTable(item):
     global belong_data
     itemID = str(item["ItemID"])
     categoryList = item["Category"]
+    repeatedList = []
     for category in categoryList:
-        data = itemID + "|" + '\"' + sub(r'\"','\"\"', category) + '\"' + "\n"
-        belong_data.append(data)
+        if category not in repeatedList:
+            repeatedList.append(category)
+            data = itemID + "|" + '\"' + sub(r'\"','\"\"', category) + '\"' + "\n"
+            belong_data.append(data)
 
 
 """
