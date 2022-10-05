@@ -26,7 +26,7 @@ CREATE TABLE Item (
     Started         DATETIME        NOT NULL,
     Ends            DATETIME        NOT NULL,
     SellerID        VARCHAR(255),
-    FOREIGN KEY (SellerID) REFERENCES User (UserID),
+    FOREIGN KEY (SellerID) REFERENCES User (UserID)
 );
 
 CREATE TABLE Belong (
@@ -34,7 +34,7 @@ CREATE TABLE Belong (
     CategoryID      VARCHAR(255),
     PRIMARY KEY (CategoryID, ItemID),
     FOREIGN KEY (CategoryID) REFERENCES Category (CategoryID),
-    FOREIGN KEY (ItemID) REFERENCES Item (ItemID),
+    FOREIGN KEY (ItemID) REFERENCES Item (ItemID)
 );
 
 CREATE TABLE Bid (
