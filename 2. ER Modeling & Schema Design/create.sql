@@ -1,3 +1,8 @@
+DROP TABLE if exist Category;
+DROP TABLE if exist Belong;
+DROP TABLE if exist User;
+DROP TABLE if exist Item;
+DROP TABLE if exist Bid;
 
 CREATE TABLE Category (
     CategoryID      VARCHAR(255)    PRIMARY KEY
@@ -22,10 +27,10 @@ CREATE TABLE Item (
     ItemID          INTEGER         PRIMARY KEY,
     Number_of_bids  INTEGER         NOT NULL,
     First_Bid       DOUBLE          NOT NULL,
-    Buy_Price       DOUBLE
+    Buy_Price       DOUBLE,
     Currently       DOUBLE          NOT NULL,
     Name            VARCHAR(255)    NOT NULL,
-    Description     VARCHAR(255)    NOT NULL,
+    Description     VARCHAR(255),
     Started         DATETIME        NOT NULL,
     Ends            DATETIME        NOT NULL,
     SellerID        VARCHAR(255),
