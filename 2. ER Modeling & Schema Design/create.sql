@@ -1,8 +1,8 @@
-DROP TABLE if exist Category;
-DROP TABLE if exist Belong;
-DROP TABLE if exist User;
-DROP TABLE if exist Item;
-DROP TABLE if exist Bid;
+DROP TABLE if exists Category;
+DROP TABLE if exists Belong;
+DROP TABLE if exists User;
+DROP TABLE if exists Item;
+DROP TABLE if exists Bid;
 
 CREATE TABLE Category (
     CategoryID      VARCHAR(255)    PRIMARY KEY
