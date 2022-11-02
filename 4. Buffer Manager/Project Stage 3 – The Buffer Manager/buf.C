@@ -109,7 +109,54 @@ const Status BufMgr::allocBuf(int &frame) {
     return BUFFEREXCEEDED;
 }
 
-const Status BufMgr::readPage(File *file, const int PageNo, Page *&page) {}
+const Status BufMgr::readPage(File *file, const int PageNo, Page *&page) {
+    int frameNo;
+
+    // Check if page is already in the buffer pool
+    Status isInPool =  hashTable->lookup(file, PageNo, frameNo);
+
+    // Case 1: Page is not in the buffer pool
+    if (isInPool == HASHNOTFOUND) {
+        // Allocate a buffer frame
+        Status alloc_frame = allocBuf(frameNo);
+        if (alloc_frame != OK) {
+            return alloc_frame;
+        }
+
+        // Read the page from disk into the pool frame
+        Page *fpptr = &bufPool[frameNo];
+        Status read_page = file->readPage(PageNo, fpptr);
+        if (read_page != OK) {
+            return read_page;
+        }
+
+        // Insert the page into the hashtable
+        Status insert_page = hashTable->insert(file, PageNo, frameNo);
+        if (insert_page != OK) {
+            return insert_page;
+        }
+
+        // Invoke Set() on the frame
+        bufTable[frameNo].Set(file, PageNo);
+
+        // return page pointer to the frame via parameter
+        page = &bufPool[frameNo];
+
+
+    } else { // Case 2: Page is in the buffer pool
+        // Set refbit to true
+        bufTable[frameNo].refbit = true;
+
+        // Increment pinCnt
+        bufTable[frameNo].pinCnt += 1;
+
+        // return page pointer to the frame via parameter
+        page = &bufPool[frameNo];
+
+    }
+
+    return OK;
+}
 
 const Status BufMgr::unPinPage(File *file, const int PageNo, const bool dirty) {
 
