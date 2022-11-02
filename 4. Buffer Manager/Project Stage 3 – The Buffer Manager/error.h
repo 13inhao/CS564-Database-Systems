@@ -10,68 +10,102 @@
 
 enum Status {
 
-// no error
+    // no error
 
-       OK = 0, NOTUSED1 = -999,
+    OK = 0,
+    NOTUSED1 = -999,
 
-// File and DB errors
+    // File and DB errors
 
-       BADFILEPTR, BADFILE, FILETABFULL, FILEOPEN, FILENOTOPEN,
-       UNIXERR, BADPAGEPTR, BADPAGENO, FILEEXISTS,
+    BADFILEPTR,
+    BADFILE,
+    FILETABFULL,
+    FILEOPEN,
+    FILENOTOPEN,
+    UNIXERR,
+    BADPAGEPTR,
+    BADPAGENO,
+    FILEEXISTS,
 
-// BufMgr and HashTable errors
+    // BufMgr and HashTable errors
 
-       HASHTBLERROR, HASHNOTFOUND, BUFFEREXCEEDED, PAGENOTPINNED,
-       BADBUFFER, PAGEPINNED,
+    HASHTBLERROR,
+    HASHNOTFOUND,
+    BUFFEREXCEEDED,
+    PAGENOTPINNED,
+    BADBUFFER,
+    PAGEPINNED,
 
-// Page errors
-	
-       NOSPACE,  NORECORDS,  ENDOFPAGE, INVALIDSLOTNO, INVALIDRECLEN,
+    // Page errors
 
-// HeapFile errors
+    NOSPACE,
+    NORECORDS,
+    ENDOFPAGE,
+    INVALIDSLOTNO,
+    INVALIDRECLEN,
 
-       BADRID, BADRECPTR, BADSCANPARM, BADSCANID, SCANTABFULL, FILEEOF, FILEHDRFULL,
+    // HeapFile errors
 
-// Index errors
- 
-       BADINDEXPARM, RECNOTFOUND, BUCKETFULL, DIROVERFLOW, 
-       NONUNIQUEENTRY, NOMORERECS,
+    BADRID,
+    BADRECPTR,
+    BADSCANPARM,
+    BADSCANID,
+    SCANTABFULL,
+    FILEEOF,
+    FILEHDRFULL,
 
-// SortedFile errors
- 
-       BADSORTPARM, INSUFMEM, 
-	
-// Catalog errors
+    // Index errors
 
-       BADCATPARM, RELNOTFOUND, ATTRNOTFOUND,
-       NAMETOOLONG, DUPLATTR, RELEXISTS, NOINDEX,
-       INDEXEXISTS, ATTRTOOLONG,
+    BADINDEXPARM,
+    RECNOTFOUND,
+    BUCKETFULL,
+    DIROVERFLOW,
+    NONUNIQUEENTRY,
+    NOMORERECS,
 
-// Utility errors
+    // SortedFile errors
 
-// Query errors
+    BADSORTPARM,
+    INSUFMEM,
 
-       ATTRTYPEMISMATCH, TMP_RES_EXISTS,
+    // Catalog errors
 
-// do not touch filler -- add codes before it
+    BADCATPARM,
+    RELNOTFOUND,
+    ATTRNOTFOUND,
+    NAMETOOLONG,
+    DUPLATTR,
+    RELEXISTS,
+    NOINDEX,
+    INDEXEXISTS,
+    ATTRTOOLONG,
 
-       NOTUSED2
+    // Utility errors
+
+    // Query errors
+
+    ATTRTYPEMISMATCH,
+    TMP_RES_EXISTS,
+
+    // do not touch filler -- add codes before it
+
+    NOTUSED2
 };
-
 
 // definition of Error class
 
 class Error {
- public:
-  void print(Status status);
+  public:
+    void print(Status status);
 };
 
-
-#define ASSERT(c)  { if (!(c)) { \
-		       cerr << "At line " << __LINE__ << ":" << endl << "  "; \
-                       cerr << "This condition should hold: " #c << endl; \
-                       exit(1); \
-		     } \
-                   }
+#define ASSERT(c)                                                              \
+    {                                                                          \
+        if (!(c)) {                                                            \
+            cerr << "At line " << __LINE__ << ":" << endl << "  ";             \
+            cerr << "This condition should hold: " #c << endl;                 \
+            exit(1);                                                           \
+        }                                                                      \
+    }
 
 #endif
