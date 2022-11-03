@@ -161,14 +161,20 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page) {
 
     return OK;
 
-
-
-
 }
 
 
-const Status BufMgr::unPinPage(File* file, const int PageNo, const bool dirty) {
-    
+/**
+ * Decrements the pinCnt of the frame containing (file, PageNo) and, 
+ * if dirty == true, sets the dirty bit.  
+ * 
+ * 
+ * Returns OK if no errors occurred, 
+ * HASHNOTFOUND if the page is not in the buffer pool hash table, 
+ * PAGENOTPINNED if the pin count is already 0.
+ * 
+ */
+const Status BufMgr::unPinPage(File *file, const int PageNo, const bool dirty) {
     // see if it is in the buffer pool
     Status status = OK;
     int frameNo = 0;
@@ -196,8 +202,18 @@ const Status BufMgr::unPinPage(File* file, const int PageNo, const bool dirty) {
 
 }
 
-const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) {
-    
+/**
+ * Allocates a buffer pool frame (page) for the current file 
+ * and returns the page number of the newly allocated page via the pageNo parameter 
+ * and a pointer to the buffer frame allocated for the page via the page parameter. 
+ * 
+ * Returns OK if no errors occurred, 
+ * UNIXERR if a Unix error occurred, 
+ * BUFFEREXCEEDED if all buffer frames are pinned 
+ * and HASHTBLERROR if a hash table error occurred. 
+ * 
+ */
+const Status BufMgr::allocPage(File *file, int &pageNo, Page *&page) {
     int newPageNumber = 0;
     Status file_alloc_status = file->allocatePage(newPageNumber);
 
@@ -219,17 +235,13 @@ const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) {
         return insert_status;
     }
 
-    bufTable[newFrame].Set(file, newPageNumber);
-    page = &bufPool[newFrame];
+    BufDesc* bufPtr = &bufTable[newFrame];
+    bufPtr->Set(file, newPageNumber);
 
+    pageNo = newPageNumber;
 
-    // BufDesc* bufPtr = &bufTable[newFrame];
-    // bufPtr->Set(file, newPageNumber);
-
-    // pageNo = newPageNumber;
-
-    // Page* pagePtr = &bufPool[newFrame];
-    // page = pagePtr;
+    Page* pagePtr = &bufPool[newFrame];
+    page = pagePtr;
     
     return OK;
 
