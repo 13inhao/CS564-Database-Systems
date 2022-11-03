@@ -168,12 +168,70 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page) {
 
 
 const Status BufMgr::unPinPage(File* file, const int PageNo, const bool dirty) {
+    
+    // see if it is in the buffer pool
+    Status status = OK;
+    int frameNo = 0;
+    status = hashTable->lookup(file, PageNo, frameNo);
 
+    // if it is not in the buffer pool, directly return HASHNOTFOUND
+    if(status != OK){
+        return status;
+    }
+
+    // Decrements the pinCnt of the frame containing,
+    // return PAGENOTPINNED if the pin count is already 0.
+    if(bufTable[frameNo].pinCnt == 0) {
+        return PAGENOTPINNED;
+    }
+    bufTable[frameNo].pinCnt--;
+
+    // if dirty == true, sets the dirty bit
+    if(dirty) {
+        bufTable[frameNo].dirty = true;
+    }
+    
+    // Returns OK if no errors occurred
+    return OK;
 
 }
 
 const Status BufMgr::allocPage(File* file, int& pageNo, Page*& page) {
+    
+    int newPageNumber = 0;
+    Status file_alloc_status = file->allocatePage(newPageNumber);
 
+    // Return corresponding error if we fails to 
+    // allocate an empty page by calling allocatePage().
+    if(file_alloc_status != OK){
+        return file_alloc_status;
+    }
+
+    // allocBuf() is called to obtain a buffer pool frame
+    int newFrame = 0;
+    Status frame_alloc_status = allocBuf(newFrame);
+    if(frame_alloc_status != OK) {
+        return frame_alloc_status;
+    }
+
+    Status insert_status = hashTable->insert(file, newPageNumber, newFrame);
+    if(insert_status != OK) {
+        return insert_status;
+    }
+
+    bufTable[newFrame].Set(file, newPageNumber);
+    page = &bufPool[newFrame];
+
+
+    // BufDesc* bufPtr = &bufTable[newFrame];
+    // bufPtr->Set(file, newPageNumber);
+
+    // pageNo = newPageNumber;
+
+    // Page* pagePtr = &bufPool[newFrame];
+    // page = pagePtr;
+    
+    return OK;
 
 }
 
