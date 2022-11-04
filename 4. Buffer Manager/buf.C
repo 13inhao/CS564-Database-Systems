@@ -74,7 +74,7 @@ BufMgr::~BufMgr() {
 }
 
 /**
- * allocBuf. Allocates a free frame using the clock algorithm; if necessary,
+ * @brief allocBuf. Allocates a free frame using the clock algorithm; if necessary,
  * writing a dirty page back to disk. Returns BUFFEREXCEEDED if all buffer
  * frames are pinned, UNIXERR if the call to the I/O layer returned an error
  * when a dirty page was being written to disk and OK otherwise.  This private
@@ -139,7 +139,7 @@ const Status BufMgr::allocBuf(int &frame) {
 }
 
 /**
- * Read page. Return a pointer to the frame containing the page via the page
+ * @brief Read page. Return a pointer to the frame containing the page via the page
  * parameter. First check whether the page is already in the buffer pool. Case
  * 1: Page is not in the buffer pool. Allocate frame and read from disk into the
  * pool. Case 2: Page is in the buffer pool. Set the frame appropriately.
@@ -202,7 +202,7 @@ const Status BufMgr::readPage(File *file, const int PageNo, Page *&page) {
 }
 
 /**
- * Decrements the pinCnt of the frame containing (file, PageNo) and,
+ * @brief unPinPage. Decrements the pinCnt of the frame containing (file, PageNo) and,
  * if dirty == true, sets the dirty bit.
  *
  * @param file: the pointer to the file that has the page to be unpinned,
@@ -243,7 +243,7 @@ const Status BufMgr::unPinPage(File *file, const int PageNo, const bool dirty) {
 }
 
 /**
- * Allocates a buffer pool frame (page) for the current file
+ * @brief allocPage. Allocates a buffer pool frame (page) for the current file
  * and returns the page number of the newly allocated page via the pageNo
  * parameter and a pointer to the buffer frame allocated for the page via the
  * page parameter.
