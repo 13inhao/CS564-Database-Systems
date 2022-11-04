@@ -230,19 +230,23 @@ const Status BufMgr::allocPage(File *file, int &pageNo, Page *&page) {
         return frame_alloc_status;
     }
 
+    // an entry is inserted into the hash table
     Status insert_status = hashTable->insert(file, newPageNumber, newFrame);
     if(insert_status != OK) {
         return insert_status;
     }
 
+    // And Set() is invoked on the frame to set it up properly
     BufDesc* bufPtr = &bufTable[newFrame];
     bufPtr->Set(file, newPageNumber);
 
+    // The method returns both the page number of the newly allocated page via the pageNo parameter 
+    // and a pointer to the buffer frame allocated for the page via the page parameter.
     pageNo = newPageNumber;
-
     Page* pagePtr = &bufPool[newFrame];
     page = pagePtr;
-    
+
+    //  Returns OK if no errors occurred
     return OK;
 
 }
