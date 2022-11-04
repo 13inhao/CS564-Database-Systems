@@ -131,10 +131,14 @@ const Status BufMgr::allocBuf(int & frame) {
  * Case 1: Page is not in the buffer pool. Allocate frame and read from disk into the pool. 
  * Case 2: Page is in the buffer pool. Set the frame appropriately.
  * 
- * Returns OK if no errors occurred, 
- * UNIXERR if a Unix error occurred
- * BUFFEREXCEEDED if all buffer frames are pinned
- * HASHTBLERROR if a hash table error occurred.
+ * @param  file:  the pointer to the file that contains the page to be read,
+ * @param  PageNo: the page number to be read,
+ * @param  page: the reference to the frame containing the page; 
+ * 
+ * @return: OK if no errors occurred, 
+ *          UNIXERR if a Unix error occurred,
+ *          BUFFEREXCEEDED if all buffer frames are pinned,
+ *          HASHTBLERROR if a hash table error occurred.
  * 
  */	
 const Status BufMgr::readPage(File* file, const int PageNo, Page*& page) {
@@ -192,10 +196,13 @@ const Status BufMgr::readPage(File* file, const int PageNo, Page*& page) {
  * Decrements the pinCnt of the frame containing (file, PageNo) and, 
  * if dirty == true, sets the dirty bit.  
  * 
+ * @param file: the pointer to the file that has the page to be unpinned,
+ * @param PageNo: the page number to be unpinned,
+ * @param dirty: the boolean value that indicates if the page to be unpinned is dirty or not;
  * 
- * Returns OK if no errors occurred, 
- * HASHNOTFOUND if the page is not in the buffer pool hash table, 
- * PAGENOTPINNED if the pin count is already 0.
+ * @return: Returns OK if no errors occurred, 
+ *          HASHNOTFOUND if the page is not in the buffer pool hash table, 
+ *          PAGENOTPINNED if the pin count is already 0;
  * 
  */
 const Status BufMgr::unPinPage(File *file, const int PageNo, const bool dirty) {
@@ -231,10 +238,14 @@ const Status BufMgr::unPinPage(File *file, const int PageNo, const bool dirty) {
  * and returns the page number of the newly allocated page via the pageNo parameter 
  * and a pointer to the buffer frame allocated for the page via the page parameter. 
  * 
- * Returns OK if no errors occurred, 
- * UNIXERR if a Unix error occurred, 
- * BUFFEREXCEEDED if all buffer frames are pinned 
- * and HASHTBLERROR if a hash table error occurred. 
+ * @param  file:  the pointer to the file that contains the page to be allocated,
+ * @param  PageNo: the page number of the newly allocated page,
+ * @param  page: the reference to the pointer to the buffer frame allocated for the page;
+ * 
+ * @returns OK if no errors occurred, 
+ *          UNIXERR if a Unix error occurred, 
+ *          BUFFEREXCEEDED if all buffer frames are pinned,
+ *          HASHTBLERROR if a hash table error occurred;
  * 
  */
 const Status BufMgr::allocPage(File *file, int &pageNo, Page *&page) {
