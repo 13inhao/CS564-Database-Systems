@@ -11,15 +11,15 @@
 //
 //////////////////////////// 80 columns wide ///////////////////////////////////
 
-#include "buf.h"
-#include "page.h"
+#include <memory.h>
+#include <unistd.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <iostream>
-#include <memory.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "page.h"
+#include "buf.h"
 
 #define ASSERT(c)                                                              \
     {                                                                          \
