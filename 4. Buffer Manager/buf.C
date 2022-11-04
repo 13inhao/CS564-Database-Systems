@@ -1,3 +1,16 @@
+////////////////////////////////////////////////////////////////////////////////
+// Main File:        buf.C
+// This File:        buf.C     
+// Semester:         CS 564 Fall 2022
+// Instructor:       Paris Koutris
+// 
+// Author:           Binhao Chen, Steven Yang, Yishen Sun
+// Email:            bchen276@wisc.edu, yang558@wisc.edu, yishen.sun@wisc.edu
+//
+// Purpose of File:  This file implements the Buffer Manager
+//
+//////////////////////////// 80 columns wide ///////////////////////////////////
+
 #include <memory.h>
 #include <unistd.h>
 #include <errno.h>
@@ -112,7 +125,18 @@ const Status BufMgr::allocBuf(int & frame) {
     return BUFFEREXCEEDED;
 }
 
-	
+/**
+ * Read page. Return a pointer to the frame containing the page via the page parameter.
+ * First check whether the page is already in the buffer pool. 
+ * Case 1: Page is not in the buffer pool. Allocate frame and read from disk into the pool. 
+ * Case 2: Page is in the buffer pool. Set the frame appropriately.
+ * 
+ * Returns OK if no errors occurred, 
+ * UNIXERR if a Unix error occurred
+ * BUFFEREXCEEDED if all buffer frames are pinned
+ * HASHTBLERROR if a hash table error occurred.
+ * 
+ */	
 const Status BufMgr::readPage(File* file, const int PageNo, Page*& page) {
     int frameNo;
 
