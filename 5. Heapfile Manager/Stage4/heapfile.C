@@ -15,21 +15,61 @@ const Status createHeapFile(const string fileName)
     status = db.openFile(fileName, file);
     if (status != OK)
     {
-		// file doesn't exist. First create it and allocate
-		// an empty header page and data page.
+		// file doesn't exist. First create a new file.
+        status = db.createFile(fileName);
+		if (status != OK) {
+            return status;
+        };
 		
+        // open the new created file.
+		status = db.openFile(fileName, file);
+	    if (status != OK) {
+            return status;
+        };
 		
+		// allocate an empty header page and data page. 
+        status = bufMgr->allocPage(file, hdrPageNo, newPage);
+        if (status != OK) {
+            return status;
+        }
+
+        // Take the Page* pointer returned from allocPage() cast it to a FileHdrPage*.
+        hdrPage = (FileHdrPage*) newPage;
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+		// initialize the values in the header page. 
+		strncpy(hdrPage->fileName, fileName.c_str(), MAXNAMESIZE); 
+		hdrPage->firstPage = -1;
+        hdrPage->lastPage = -1;
+        hdrPage->pageCnt = 0;
+        hdrPage->recCnt = 0;
+
+        // make a second call to bm->allocPage(). 
+        // This page will be the first data page of the file.
+        status = bufMgr->allocPage(file, newPageNo, newPage);
+        if (status != OK) {
+            return status;
+        }
+        // invoke its init() method to initialize the page contents.
+        newPage->init(newPageNo);
+
+        newPage->setNextPage(-1);	
+
+        // store the page number of the data page in
+        // firstPage and lastPage attributes of the FileHdrPage
+        hdrPage->firstPage = newPageNo;
+        hdrPage->lastPage = newPageNo;
+        hdrPage->pageCnt = 1;
+        hdrPage->recCnt = 0;
+
+        // unpin both pages and mark them as dirty.
+        status = bufMgr->unPinPage(file, hdrPageNo, true);
+        if (status != OK) {
+            return status;
+        }
+        status = bufMgr->unPinPage(file, newPageNo, true);
+        if (status != OK) {
+            return status;
+        }
     }
     return (FILEEXISTS);
 }
@@ -51,17 +91,43 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
     // open the file and read in the header page and the first data page
     if ((status = db.openFile(fileName, filePtr)) == OK)
     {
+        // get the page number of the header page.
+		status = filePtr->getFirstPage(headerPageNo);
+		if (status != OK) {
+			returnStatus = status;
+            return;
+		}
+
+		// reads and pins the header page for the file in the buffer pool.
+		status = bufMgr->readPage(filePtr, headerPageNo, pagePtr);
+		if (status != OK) {
+			returnStatus = status;
+            return;
+		}
+
+        // initializing the private data members headerPage, headerPageNo, and hdrDirtyFlag.
+		headerPage = (FileHdrPage*) pagePtr;
+		hdrDirtyFlag = false;
 		
+		// read and pin the first page of the file into the buffer pool, 
+        int firstPageNo = headerPage->firstPage;
+        status = bufMgr->readPage(filePtr, firstPageNo, pagePtr);
+        if (status != OK) {
+			returnStatus = status;
+            return;
+		}
+
+        // initializing the values of curPage, curPageNo, and curDirtyFlag appropriately. 
+        curPage = pagePtr;
+        curPageNo = firstPageNo;
+        curDirtyFlag = false;
+        
+        // Set curRec to NULLRID.
+        curRec = NULLRID;
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+        // No errors happen
+        returnStatus = OK;
+        return;
     }
     else
     {
@@ -363,7 +429,7 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
   
   
   
-  
+
   
   
   
