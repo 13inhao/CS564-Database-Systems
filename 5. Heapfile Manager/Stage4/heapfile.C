@@ -187,11 +187,36 @@ const Status HeapFile::getRecord(const RID & rid, Record & rec)
 
     // cout<< "getRecord. record (" << rid.pageNo << "." << rid.slotNo << ")" << endl;
    
-   
-   
-   
-   
-   
+    // Case 1: record is on the currently pinned page
+    if (curPageNo == rid.pageNo) {
+        // Get the record
+        status = curPage->getRecord(rid, rec);
+        curRec = rid;
+        return status;
+    } else { // Case 2: desired record is not on the currently pinned page
+    
+        // Unpin the currently pinned page
+        status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+        if (status != OK) {
+            return status;
+        }
+
+        // Read the page into the buffer pool
+        status = bufMgr->readPage(filePtr, rid.pageNo, curPage);
+        if (status != OK) {
+            return status;
+        }
+
+        // Update the current pinned page number and record
+        curPageNo = rid.pageNo;
+        curRec = rid;
+        curDirtyFlag = false;
+
+        // get the record
+        status = curPage->getRecord(rid, rec);
+    }
+
+    return status;
    
 }
 
@@ -289,16 +314,103 @@ const Status HeapFileScan::scanNext(RID& outRid)
     RID		tmpRid;
     int 	nextPageNo;
     Record      rec;
+	
+    // Case 1: no page is pinned in this file, check if the first record is satisfied.
+    if (curPage == NULL) {
 
-    
-	
-	
-	
-	
-	
-	
-	
-	
+        // Start with the first page in the file
+        curPageNo = headerPage->firstPage;
+
+        // Check if the file is empty
+        if (curPageNo < 0) {
+            return FILEEOF;
+        }
+
+        status = bufMgr->readPage(filePtr, curPageNo, curPage);
+        if (status != OK) {
+            return status;
+        }
+
+        // Start with the first record in the first page
+        status = curPage->firstRecord(tmpRid);
+        if (status != OK) {
+            return status;
+        }
+
+        // Set rid of record returned and the dirty bit
+        curRec = tmpRid;
+        curDirtyFlag = false;
+
+        // Convert the rid to a pointer to the record
+        status = curPage->getRecord(curRec, rec);
+        if (status != OK) {
+            return status;
+        }
+
+        // if the first record satisfies, return this record
+        if (matchRec(rec) == true) {
+            outRid = curRec;
+            return OK;
+        }
+
+    }
+
+    // Continue checking the rest of the records in the file (follow case 1),
+    // Or, start with whatever page that has already pinned
+    while(true) {
+        // Get the next record
+        status = curPage->nextRecord(curRec, nextRid);
+
+        // curRec was the last record on the page
+        if (status != OK) {
+            while (status != OK) {
+
+                // Get the next page in the file
+                status = curPage->getNextPage(nextPageNo);
+                if (status != OK) {
+                    return status;
+                }
+                // if there is no next page
+                if (nextPageNo < 0) {
+                    return FILEEOF;
+                }
+
+                // unpin the curPage to get ready to read the next page
+                status = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+                if (status != OK) {
+                    return status;
+                }
+
+                // read in the next page into the buffer pool
+                curPageNo = nextPageNo;
+                status = bufMgr->readPage(filePtr, curPageNo, curPage);
+                if (status != OK) {
+                    return status;
+                }
+                curDirtyFlag = false;
+
+                // retrieve the first record of this page, and continue checking if this page is empty
+                status = curPage->firstRecord(curRec);
+            }
+        } else {
+            // nextRid is a valid and existing record
+            curRec = nextRid;
+        }
+
+        // Convert the rid to a pointer to the record
+        status = curPage->getRecord(curRec, rec);
+        if (status != OK) {
+            return status;
+        }
+
+        // if the first record satisfies, return this record
+        if (matchRec(rec) == true) {
+            outRid = curRec;
+            return OK;
+        }
+    }
+
+	return FILEEOF;
 	
 }
 
