@@ -52,8 +52,6 @@ const Status createHeapFile(const string fileName)
         // invoke its init() method to initialize the page contents.
         newPage->init(newPageNo);
 
-        newPage->setNextPage(-1);	
-
         // store the page number of the data page in
         // firstPage and lastPage attributes of the FileHdrPage
         hdrPage->firstPage = newPageNo;
@@ -71,7 +69,7 @@ const Status createHeapFile(const string fileName)
             return status;
         }
         
-        //  close the file
+        // after creating the empty heap file, close it before return;
         status = db.closeFile(file);
         if (status != OK) {
             return status;
