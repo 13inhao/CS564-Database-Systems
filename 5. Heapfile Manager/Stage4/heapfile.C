@@ -534,18 +534,65 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
         // will never fit on a page, so don't even bother looking
         return INVALIDRECLEN;
     }
+    // if curPage is NULL or curPage is not the last page,
+    // replace curPage with lastPage
+    if(!curPage || curPageNo != headerPage->lastPage) {
 
-  
-  
-  
-  
-  
-  
+      unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+      if( unpinstatus != OK) {return unpinstatus;}
 
-  
-  
-  
-  
+      curPageNo = headerPage->lastPage;
+      status = bufMgr->readPage(filePtr, curPageNo, curPage);
+      if( status != OK) return status;
+      curDirtyFlag = false;
+
+    }
+
+    // insert record and check whether current page is full
+    status = curPage->insertRecord(rec, rid);
+    if(status == OK) {
+      // bookkeeping
+      headerPage->recCnt++;
+      curRec = rid;
+      curDirtyFlag = true;
+
+      outRid = rid;
+      return OK;
+    }
+    // nospace, allocate another page
+    else if (status == NOSPACE) {
+      status = bufMgr->allocPage(filePtr, newPageNo, newPage);
+      if( status != OK) {return status;}
+      // new page init
+      newPage->init(newPageNo);
+      headerPage->lastPage = newPageNo;
+      headerPage->pageCnt++;
+      // link up the new page
+      curPage->setNextPage(newPageNo);
+      // write back
+      unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, true);
+      if( unpinstatus != OK) {return unpinstatus;}
+      // load the new page
+      curPageNo = headerPage->lastPage;
+      status = bufMgr->readPage(filePtr, curPageNo, curPage);
+      if( status != OK) return status;
+
+      status = curPage->insertRecord(rec, rid);
+      if( status != OK) return status;
+      // bookkeeping
+      headerPage->recCnt++;
+      curRec = rid;
+      curDirtyFlag = true;
+
+      curPage->setNextPage(-1); // no next page
+
+      outRid = rid;
+      return OK;
+    }
+    else {
+      // error
+      return status;
+    }
   
 }
 
