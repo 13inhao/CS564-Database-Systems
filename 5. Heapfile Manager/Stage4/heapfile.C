@@ -70,6 +70,15 @@ const Status createHeapFile(const string fileName)
         if (status != OK) {
             return status;
         }
+        
+        //  close the file
+        status = db.closeFile(file);
+        if (status != OK) {
+            return status;
+        } 
+        
+        // All tasks are completed without any errors, return OK status.
+        return OK;
     }
     return (FILEEXISTS);
 }
