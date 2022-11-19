@@ -543,10 +543,10 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
     }
     // if curPage is NULL or curPage is not the last page,
     // replace curPage with lastPage
-    if(!curPage || curPageNo != headerPage->lastPage) {
+    if(curPageNo != headerPage->lastPage || !curPage) {
 
       unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
-      if(unpinstatus != OK) {return unpinstatus;}
+      if(unpinstatus != OK) return unpinstatus;
 
       curPageNo = headerPage->lastPage;
       status = bufMgr->readPage(filePtr, curPageNo, curPage);
@@ -556,19 +556,21 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
 
     // insert record and check whether current page is full
     status = curPage->insertRecord(rec, rid);
+    if (status != OK && status != NOSPACE) return status;
+
     if(status == OK) {
       // bookkeeping
-      headerPage->recCnt++;
       curRec = rid;
+      headerPage->recCnt++;
       curDirtyFlag = true;
 
       outRid = rid;
       return OK;
     }
     // nospace, allocate another page
-    else if (status == NOSPACE) {
+    else {
       status = bufMgr->allocPage(filePtr, newPageNo, newPage);
-      if(status != OK) {return status;}
+      if(status != OK) return status;
       // new page init
       newPage->init(newPageNo);
       headerPage->lastPage = newPageNo;
@@ -577,7 +579,7 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
       curPage->setNextPage(newPageNo);
       // write back
       unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
-      if(unpinstatus != OK) {return unpinstatus;}
+      if(unpinstatus != OK) return unpinstatus;
       // load the new page
       curPageNo = headerPage->lastPage;
       status = bufMgr->readPage(filePtr, curPageNo, curPage);
@@ -586,21 +588,17 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
       status = curPage->insertRecord(rec, rid);
       if(status != OK) return status;
       // bookkeeping
-      headerPage->recCnt++;
       curRec = rid;
+      headerPage->recCnt++;
       curDirtyFlag = true;
-
-      curPage->setNextPage(-1); // no next page
+      // no next page
+      curPage->setNextPage(-1);
 
       unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
       if(unpinstatus != OK) return unpinstatus;
 
       outRid = rid;
       return OK;
-    }
-    else {
-      // error
-      return status;
     }
   
 }
