@@ -112,7 +112,8 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
             return;
 		}
 
-        // initializing the private data members headerPage, headerPageNo, and hdrDirtyFlag.
+        // initializing the private data members headerPage, and hdrDirtyFlag.
+        // headerPageNo is initialized by calling the readPage function above;
 		headerPage = (FileHdrPage*) pagePtr;
 		hdrDirtyFlag = false;
 		
@@ -132,7 +133,7 @@ HeapFile::HeapFile(const string & fileName, Status& returnStatus)
         // Set curRec to NULLRID.
         curRec = NULLRID;
 		
-        // No errors happen
+        // All tasks are completed without any errors, return OK status.
         returnStatus = OK;
         return;
     }
