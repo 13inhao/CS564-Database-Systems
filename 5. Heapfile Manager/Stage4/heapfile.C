@@ -548,13 +548,12 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
     if(!curPage || curPageNo != headerPage->lastPage) {
 
       unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
-      if( unpinstatus != OK) {return unpinstatus;}
+      if(unpinstatus != OK) {return unpinstatus;}
 
       curPageNo = headerPage->lastPage;
       status = bufMgr->readPage(filePtr, curPageNo, curPage);
-      if( status != OK) return status;
+      if(status != OK) return status;
       curDirtyFlag = false;
-
     }
 
     // insert record and check whether current page is full
@@ -571,7 +570,7 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
     // nospace, allocate another page
     else if (status == NOSPACE) {
       status = bufMgr->allocPage(filePtr, newPageNo, newPage);
-      if( status != OK) {return status;}
+      if(status != OK) {return status;}
       // new page init
       newPage->init(newPageNo);
       headerPage->lastPage = newPageNo;
@@ -579,21 +578,24 @@ const Status InsertFileScan::insertRecord(const Record & rec, RID& outRid)
       // link up the new page
       curPage->setNextPage(newPageNo);
       // write back
-      unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, true);
-      if( unpinstatus != OK) {return unpinstatus;}
+      unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+      if(unpinstatus != OK) {return unpinstatus;}
       // load the new page
       curPageNo = headerPage->lastPage;
       status = bufMgr->readPage(filePtr, curPageNo, curPage);
-      if( status != OK) return status;
+      if(status != OK) return status;
 
       status = curPage->insertRecord(rec, rid);
-      if( status != OK) return status;
+      if(status != OK) return status;
       // bookkeeping
       headerPage->recCnt++;
       curRec = rid;
       curDirtyFlag = true;
 
       curPage->setNextPage(-1); // no next page
+
+      unpinstatus = bufMgr->unPinPage(filePtr, curPageNo, curDirtyFlag);
+      if(unpinstatus != OK) return unpinstatus;
 
       outRid = rid;
       return OK;
